@@ -1,3 +1,4 @@
+import { Meteor } from 'meteor/meteor';
 import { Template } from 'meteor/templating';
 import { ReactiveDict } from 'meteor/reactive-dict';
 import { Tasks } from '../api/tasks.js';
@@ -23,6 +24,8 @@ Template.body.helpers({
 //Creating a ReactiveDict to store temporary state of 'hide items checked' function
 Template.body.onCreated(function bodyOnCreated(){
   this.state = new ReactiveDict();
+  //after removing autopublish, need the subscribe method to pull tasks back
+  Meteor.subscribe('tasks');
 })
 
 //looks at .new-task to see when the user subits to create a new document in the collection
@@ -35,11 +38,14 @@ Template.body.events({
     const target = event.target;
     const text = target.text.value;
 
-    //insert a task into the collection
-    Tasks.insert({
-      text,
-      createdAt: new Date(),
-    });
+    //insert a task into the collection this has been added to tasks.js as security {check} method
+    // Tasks.insert({
+    //   text,
+    //   createdAt: new Date(),
+    //   owner: Meteor.userId(),
+    //   username: Meteor.user().username,
+    // });
+    Meteor.call('tasks.insert', text);
 
     //clear form
     target.text.value="";
